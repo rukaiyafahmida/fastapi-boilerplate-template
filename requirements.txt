@@ -12,3 +12,5 @@ python-ulid==1.1.0
 pydantic[email]==1.10.2
 PyJWT==2.8.0
 fastapi-pagination==0.10.0
+passlib==1.7.4 
+password-validator==1.0
