@@ -3,7 +3,7 @@ from sqlalchemy import or_, select, and_
 from sqlalchemy.orm import Session
 from app.user.models import User
 from app.user.schemas import LoginResponseSchema, ReadUserSchema
-from core.db import get_db
+from core.db import session
 from core.exceptions import (
     PasswordDoesNotMatchException,
     DuplicateEmailOrNicknameException,
@@ -46,16 +46,16 @@ class UserService:
         return ReadUserSchema.from_orm(user)
 
 
-    # async def is_admin(self, user_id: int) -> bool:
-    #     result = await session.execute(select(User).where(User.id == user_id))
-    #     user = result.scalars().first()
-    #     if not user:
-    #         return False
+    async def is_admin(self, user_id: int) -> bool:
+        result = await session.execute(select(User).where(User.id == user_id))
+        user = result.scalars().first()
+        if not user:
+            return False
 
-    #     if user.is_admin is False:
-    #         return False
+        if user.is_admin is False:
+            return False
 
-    #     return True
+        return True
 
     async def login(self, email: str, password: str,  session: Session) -> LoginResponseSchema:
         result = await session.execute(
