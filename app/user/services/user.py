@@ -14,28 +14,31 @@ from app.user.services.password_helper import PasswordHelper
 from fastapi.responses import JSONResponse
 
 class UserService:
-    def __init__(self, ):
+    def __init__(self):
         ...
 
 
     async def create_user(
         self, email: str, password1: str, password2: str, name: str, session: Session
     ) -> None:
-        if password1 != password2:
-            raise PasswordDoesNotMatchException
-        if not PasswordHelper.validate_password(password1):
-            return JSONResponse(
-                content="Password does not follow our protocol. Make sure the password contains at least 8 characters, uppercase, lowercase, special characters, numbers and has no spaces.",
-                code=400
-            )
-        encrypted_password = PasswordHelper.bcrypt(password1)
-        
         query = select(User).where(or_(User.email == email, User.name == name))
         result = await session.execute(query)
         is_exist = result.scalars().first()
         if is_exist:
             raise DuplicateEmailOrNicknameException
 
+        if password1 != password2:
+            raise PasswordDoesNotMatchException
+        
+        if not PasswordHelper.validate_password(password1):
+            return JSONResponse(
+                content="Password does not follow our protocol. \
+                Make sure the password contains at least 8 characters, \
+                uppercase, lowercase, special characters, numbers and has no spaces.",
+                code=400
+            )
+        encrypted_password = PasswordHelper.bcrypt(password1)
+        
         user = User(email=email, password=encrypted_password, name=name)
         session.add(user)
         session.commit()
@@ -54,16 +57,16 @@ class UserService:
 
     #     return True
 
-    # async def login(self, email: str, password: str) -> LoginResponseSchema:
-    #     result = await session.execute(
-    #         select(User).where(and_(User.email == email, password == password))
-    #     )
-    #     user = result.scalars().first()
-    #     if not user:
-    #         raise UserNotFoundException
+    async def login(self, email: str, password: str,  session: Session) -> LoginResponseSchema:
+        result = await session.execute(
+            select(User).where(and_(User.email == email, password == password))
+        )
+        user = result.scalars().first()
+        if not user:
+            raise UserNotFoundException
 
-    #     response = LoginResponseSchema(
-    #         token=TokenHelper.encode(payload={"user_id": user.id}),
-    #         refresh_token=TokenHelper.encode(payload={"sub": "refresh"}),
-    #     )
-    #     return response
+        response = LoginResponseSchema(
+            token=TokenHelper.encode(payload={"user_id": user.id}),
+            refresh_token=TokenHelper.encode(payload={"sub": "refresh"}),
+        )
+        return response
