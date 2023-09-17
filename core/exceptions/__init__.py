@@ -11,14 +11,16 @@ from .base import (
 from .token import DecodeTokenException, ExpiredTokenException, InvalidAuthException
 from .user import (
     PasswordDoesNotMatchException,
-    DuplicateEmailOrNicknameException,
+    DuplicateEmailException,
     UserNotFoundException,
-    NotPermittedException
+    NotPermittedException,
+    PasswordNotValidException
 )
 
 
 __all__ = [
     # "ServerError",
+    "PasswordNotValidException",
     "NotPermittedException",
     "InvalidAuthException",
     "CustomException",
@@ -31,7 +33,7 @@ __all__ = [
     "DecodeTokenException",
     "ExpiredTokenException",
     "PasswordDoesNotMatchException",
-    "DuplicateEmailOrNicknameException",
+    "DuplicateEmailException",
     "UserNotFoundException",
 ]
 

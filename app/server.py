@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware import Middleware
-# from core.db import create_tables
+from core.db import create_tables
 from core.fastapi.logger import logger
 from api import router
 from core.exceptions import CustomException
@@ -50,9 +50,9 @@ def create_app() -> FastAPI:
 
 app = create_app()
 
-# try:
-#     create_tables()
-# except Exception as e:
-#     logger.error(f"Error creatinig tables. Error: {e}")
+try:
+    create_tables()
+except Exception as e:
+    logger.error(f"Error creatinig tables. Error: {e}")
 
 # app.add_exception_handler(JWTCustomError, jwt_custom_exception_handler)

@@ -6,8 +6,9 @@ from app.user.schemas import LoginResponseSchema, ReadUserSchema
 from core.db import session
 from core.exceptions import (
     PasswordDoesNotMatchException,
-    DuplicateEmailOrNicknameException,
+    DuplicateEmailException,
     UserNotFoundException,
+    PasswordNotValidException,
 )
 from core.utils.token_helper import TokenHelper
 from app.user.services.password_helper import PasswordHelper
@@ -19,25 +20,21 @@ class UserService:
 
 
     async def create_user(
-        self, email: str, password1: str, password2: str, name: str, session: Session
-    ) -> None:
-        query = select(User).where(or_(User.email == email, User.name == name))
-        result = await session.execute(query)
-        is_exist = result.scalars().first()
+        self, email: str, password: str, retype_password: str, name: str, session: Session
+    ):
+        result = session.query(User).filter(User.email == email)
+        is_exist = result.first()
         if is_exist:
-            raise DuplicateEmailOrNicknameException
+            raise DuplicateEmailException
 
-        if password1 != password2:
+        if password != retype_password:
             raise PasswordDoesNotMatchException
         
-        if not PasswordHelper.validate_password(password1):
-            return JSONResponse(
-                content="Password does not follow our protocol. \
-                Make sure the password contains at least 8 characters, \
-                uppercase, lowercase, special characters, numbers and has no spaces.",
-                code=400
-            )
-        encrypted_password = PasswordHelper.bcrypt(password1)
+        if not PasswordHelper.validate_password(password):
+            raise PasswordNotValidException
+        
+        encrypted_password = PasswordHelper.bcrypt(password)
+        
         
         user = User(email=email, password=encrypted_password, name=name)
         session.add(user)
@@ -47,7 +44,7 @@ class UserService:
 
 
     async def is_admin(self, user_id: int) -> bool:
-        result = await session.execute(select(User).where(User.id == user_id))
+        result = session.execute(select(User).where(User.id == user_id))
         user = result.scalars().first()
         if not user:
             return False
@@ -58,15 +55,13 @@ class UserService:
         return True
 
     async def login(self, email: str, password: str,  session: Session) -> LoginResponseSchema:
-        result = await session.execute(
+        result = session.execute(
             select(User).where(and_(User.email == email, password == password))
         )
         user = result.scalars().first()
         if not user:
             raise UserNotFoundException
-
-        response = LoginResponseSchema(
-            token=TokenHelper.encode(payload={"user_id": user.id}),
-            refresh_token=TokenHelper.encode(payload={"sub": "refresh"}),
-        )
+        
+        tokens = TokenHelper().generate_token_response(user_email=user.email)
+        response = LoginResponseSchema(**tokens)
         return response

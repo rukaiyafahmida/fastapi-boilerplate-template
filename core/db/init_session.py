@@ -86,4 +86,3 @@ def get_db():
 
 def create_tables():
     Base.metadata.create_all(engine)
-    print("created")

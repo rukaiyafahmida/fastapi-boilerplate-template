@@ -4,7 +4,6 @@ from api.user.v1.request.user import LoginRequest
 from api.user.v1.response.user import LoginResponse
 from app.user.schemas import (
     ExceptionResponseSchema,
-    GetUserListResponseSchema,
     CreateUserRequestSchema,
     CreateUserResponseSchema,
 )
@@ -13,6 +12,9 @@ from core.fastapi.dependencies import (
     PermissionDependency,
     IsAdmin,
 )
+from core.db import get_db
+from sqlalchemy.orm import Session
+
 
 user_router = APIRouter()
 
@@ -21,11 +23,11 @@ user_router = APIRouter()
 @user_router.post(
     "/register",
     response_model=CreateUserResponseSchema,
-    responses={"400": {"model": ExceptionResponseSchema}},
+    responses={"404": {"model": ExceptionResponseSchema}}
 )
-async def create_user(request: CreateUserRequestSchema):
-    await UserService().create_user(**request.dict())
-    return {"email": request.email, "nickname": request.nickname}
+async def create_user(request: CreateUserRequestSchema, session : Session = Depends(get_db)):
+    await UserService().create_user(**request.dict(), session=session)
+    return {"email": request.email, "name": request.name}
 
 
 @user_router.post(
@@ -33,6 +35,6 @@ async def create_user(request: CreateUserRequestSchema):
     response_model=LoginResponse,
     responses={"404": {"model": ExceptionResponseSchema}},
 )
-async def login(request: LoginRequest):
-    token = await UserService().login(email=request.email, password=request.password)
+async def login(request: LoginRequest, session : Session = Depends(get_db)):
+    token = await UserService().login(email=request.email, password=request.password, session= session)
     return {"token": token.token, "refresh_token": token.refresh_token}

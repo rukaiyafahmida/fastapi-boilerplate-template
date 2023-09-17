@@ -7,7 +7,7 @@ class UserBase(BaseModel):
 
     
 
-class CreateUserSchema(UserBase):
+class CreateUserRequestSchema(UserBase):
     password : str
     retype_password : str
 
@@ -28,3 +28,13 @@ class ReadUserSchema(UserBase):
 class LoginResponseSchema(BaseModel):
     token : str
     refresh_token : str
+
+
+
+class CreateUserResponseSchema(BaseModel):
+    email: str
+    name: str 
+
+    class Config:
+        orm_mode = True
+
