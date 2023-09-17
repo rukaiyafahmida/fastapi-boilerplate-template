@@ -71,6 +71,8 @@ engine = create_engine(db_url)
 conn = engine.connect()
 Base = declarative_base()
 SessionLocal = sessionmaker(bind=engine)
+
+## Common Session for reading only 
 session = SessionLocal()
 
 
@@ -80,6 +82,7 @@ def get_db():
         yield session
     finally:
         session.close()
+
 
 def create_tables():
     Base.metadata.create_all(engine)
