@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware import Middleware
 # from core.db import create_tables
-from core.logger import logger
+from core.fastapi.logger import logger
 from api import router
 from core.exceptions import CustomException
 from fastapi.responses import JSONResponse

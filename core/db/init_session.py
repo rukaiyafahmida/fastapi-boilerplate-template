@@ -4,7 +4,7 @@ import os
 from sqlalchemy_utils import create_database, database_exists
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from core.logger import logger
+from core.fastapi.logger import logger
 
 load_dotenv()
 
